@@ -1,0 +1,192 @@
+---
+title: "R draft"
+format: pdf
+editor: visual
+---
+
+# R Project Term Draft
+
+loading data
+
+```{r}
+# loading dataset
+
+library(readr)
+Rdata <- read_csv("C:/Local Disk(A)/Trent University/Data Analytics with R/Assignment/Assignment 4/StudentsPerformance_with_headers.csv")
+head(ac4data)
+```
+
+checking structure of the dataset
+
+```{r}
+#checking data structure
+str(Rdata)
+```
+
+checking column names
+
+```{r}
+# checking column names
+colnames(Rdata)
+```
+
+need to change the column name to shorter names.
+
+```{r}
+# Need to change the column name to shorter names.
+colnames(Rdata)[colnames(Rdata)=="Graduated high-school type"] <- "School Type"
+colnames(Rdata)[colnames(Rdata)=="Regular artistic or sports activity"] <- "Activity"
+colnames(Rdata)[colnames(Rdata)=="Do you have a partner"] <- "partner stat"
+colnames(Rdata)[colnames(Rdata)=="Total salary if available"] <- "salary"
+colnames(Rdata)[colnames(Rdata)=="Transportation to the university"] <- "transport type"
+colnames(Rdata)[colnames(Rdata)=="Accommodation type in Cyprus"] <- "Accommodation"
+colnames(Rdata)[colnames(Rdata)=="Number of sisters/brothers"] <- "sibligs count"
+colnames(Rdata)[colnames(Rdata)=="Reading frequency...19"] <- "reading non science"
+colnames(Rdata)[colnames(Rdata)=="Reading frequency...20"] <- "reading science"
+colnames(Rdata)[colnames(Rdata)=="Attendance to the seminars/conferences related to the department"] <- "attending seminars"
+colnames(Rdata)[colnames(Rdata)=="Impact of your projects/activities on your success"] <- "impact of activities"
+colnames(Rdata)[colnames(Rdata)=="Discussion improves my interest and success in the course"] <- "impact of discussion"
+colnames(Rdata)[colnames(Rdata)=="Cumulative grade point average in the last semester (/4.00)"] <- "last grade"
+colnames(Rdata)[colnames(Rdata)=="Expected Cumulative grade point average in the graduation (/4.00)"] <- "expected grade"
+
+colnames(Rdata)
+```
+
+We don't need all columns.
+
+```{r}
+# We don't need all columns.
+Rdata <- subset(Rdata, select = -c(`STUDENT ID`, `COURSE ID`, `expected grade`,
+`Additional work`,`Mother’s education`,`Father’s education`,`reading non science`,`reading science`,`impact of activities`,`Flip-classroom`,`last grade`))
+View(Rdata)
+```
+
+Checking for Null values
+
+```{r}
+# Checking for Null values
+is.na(Rdata)
+```
+
+There was no null value in the data
+
+\
+Regression Test:
+
+Checking data descriptive statistics
+
+```{r}
+library(readr)
+library(psych)
+library(rstatix)
+library(corrplot)
+
+core.data <- Rdata
+head(core.data)
+# Descriptive Statistics
+describe(core.data, fast = TRUE)
+```
+
+Testing assumptions:
+
+1)identifying outliers
+
+```{r}
+# Testing some assumptions :
+
+# 1) identifying extreme outliers.
+identify_outliers(core.data, 'Student Age')
+identify_outliers(core.data, Sex)
+identify_outliers(core.data, 'School Type')
+identify_outliers(core.data, 'Scholarship type')
+identify_outliers(core.data, Activity)
+identify_outliers(core.data, 'partner stat')
+identify_outliers(core.data, salary)
+identify_outliers(core.data, 'transport type')
+identify_outliers(core.data, Accommodation)
+identify_outliers(core.data, 'sibligs count')
+identify_outliers(core.data, 'Parental status')
+identify_outliers(core.data, 'Mother’s occupation')
+identify_outliers(core.data, 'Father’s occupation')
+identify_outliers(core.data, 'Weekly study hours')
+identify_outliers(core.data, 'attending seminars')
+identify_outliers(core.data, 'Attendance to classes')
+identify_outliers(core.data, 'Preparation to midterm exams 1')
+identify_outliers(core.data, 'Preparation to midterm exams 2')
+identify_outliers(core.data, 'Taking notes in classes')
+identify_outliers(core.data, 'Listening in classes')
+identify_outliers(core.data, 'impact of discussion')
+```
+
+The following variables have extreme outliers : School type, Parental status, Mother's occupation, attending seminars, Attendance to classes, Preparation to midterm exams 2 .\
+
+2\) Normality test
+
+```{r}
+# 2)Normality test.
+shapiro_test(core.data, vars = c("Student Age","Sex","School Type","Scholarship type","Activity","partner stat","salary","transport type","Accommodation","sibligs count","Parental status","Mother’s occupation","Father’s occupation","Weekly study hours","attending seminars","Attendance to classes","Preparation to midterm exams 1","Preparation to midterm exams 2","Taking notes in classes","Listening in classes","impact of discussion"))
+```
+
+In all cases p-value is less than alpha(0.05), thus the data is not normal.
+
+3)linearity test
+
+```{r}
+plot(core.data$GRADE, core.data$`Student Age`)
+plot(core.data$GRADE, core.data$Sex)
+plot(core.data$GRADE, core.data$`School Type`)
+plot(core.data$GRADE, core.data$`Scholarship type`)
+plot(core.data$GRADE, core.data$Activity)
+plot(core.data$GRADE, core.data$`partner stat`)
+plot(core.data$GRADE, core.data$salary)
+plot(core.data$GRADE, core.data$`transport type`)
+plot(core.data$GRADE, core.data$Accommodation)
+plot(core.data$GRADE, core.data$`sibligs count`)
+plot(core.data$GRADE, core.data$`Parental status`)
+plot(core.data$GRADE, core.data$`Mother’s occupation`)
+plot(core.data$GRADE, core.data$`Father’s occupation`)
+plot(core.data$GRADE, core.data$`Weekly study hours`)
+plot(core.data$GRADE, core.data$`attending seminars`)
+plot(core.data$GRADE, core.data$`Attendance to classes`)
+plot(core.data$GRADE, core.data$`Preparation to midterm exams 1`)
+plot(core.data$GRADE, core.data$`Preparation to midterm exams 2`)
+plot(core.data$GRADE, core.data$`Taking notes in classes`)
+plot(core.data$GRADE, core.data$`Listening in classes`)
+plot(core.data$GRADE, core.data$`impact of discussion`)
+```
+
+The following data are not linear : sex, activity, partner stat, attending seminars, and attendance to classes.
+
+Applying Correlation:
+
+```{r}
+colnames(core.data)
+```
+
+```{r}
+# Correlation test:
+R <-corr.test(core.data[,c("Student Age","Sex","School Type","Scholarship type","Activity","partner stat","salary","transport type","Accommodation","sibligs count","Parental status","Mother’s occupation","Father’s occupation","Weekly study hours","attending seminars","Attendance to classes","Preparation to midterm exams 1","Preparation to midterm exams 2","Taking notes in classes","Listening in classes","impact of discussion","GRADE")],method = "pearson", adjust = "none")
+R
+```
+
+Results of the correlational analysis showed that there were significant associations between Grade and Sex , r= 0.34, p \< 0.001, Grade and attending seminars r= -0.18, p \< 0.001. Other variables did not show significant associations.
+
+Applying Regression:
+
+```{r}
+LM <- lm(`GRADE` ~ . , data = core.data)
+summary(LM)
+```
+
+Current study south to determine whether or not the grade performance of a student has any assocoation with a students demographic characteristics. The study used a sampled data of 145 students. before applying any test we tested assumptions. The data contained extreme outliers in the variables of School type, Parental status, Mother's occupation, attending seminars, Attendance to classes and Preparation to midterm exams 2 . We applied Shapiro-Wilks test which showed significant p-values on all cases, meaning all instances the variables were not normally distributed. finally we used scatter plot to check the linearity of the data and The variables that were not linear were the folloing; sex, activity, partner stat, attending seminars, and attendance to classes. Other variables were linear. Nonetheless, Pearson's correlations were performed. Results of the correlational analysis showed that there were significant associations between Grade and Sex , r= 0.34, p \< 0.001, Grade and attending seminars r= -0.18, p \< 0.001. Other variables did not show significant associations. There was no significant association between Grade and Student Age r= -0.10, p \< 0.25, Grade and School type r= 0.34 , p \< 0.21, Grade and Scholarship type r= 0.02, p \< 0.77, grade and activity r= -0.06, p \< 0.45, grade and partner stat r= -0.05, p \< 0.54, grade and salary r= -0.17, p \< 0.05, grade and transport type r= -0.16, p \< 0.06, grade and accommodation r= 0.02, p \< 0.78, grade and sibling count r= 0.08, p \< 0.31, grade and parental status r= 0.07, p \< 0.43, grade and mothers occupation r= -0.03, p \< 0.71, grade and fathers occupation r= -0.04, p \< 0.60, grade and weekly study hours r= -0.03, p \< 0.69, grade and attendance to classes r= -0.14, p \< 0.09, grade and preparation to mid exam 1 r=0.01 , p \< 0.86, grade and preparation to mid exam 2 r= 0.07, p \< 0.38, grade and taking notes in classes r= 0.04, p \< 0.59, grade and listening in classes r=0.09 , p \< 0.31, grade and impact of discussion r= 0.15, p \< 0.08. Additionally, a multiple linear regression model was tested with Grade variable as outcome and Student Age,Sex,School Type,Scholarship type,Activity,partner stat,salary,transport type,Accommodation,sibligs count,Parental status,Mother's occupation,Father's occupation,Weekly study hours,attending seminars,Attendance to classes,Preparation to midterm exams 1,Preparation to midterm exams 2,Taking notes in classes,Listening in classes,impact of discussion as predictors. The overall regression model was significant; F(21,123) = 2.331, p\<0.002171 , \$R\^2\$=0.2846 . According to Cohen's (1988) conventions, the overall model explained a Large proportion of variability in Grade performance prediction. However only three predictors were significant in this model; Student Age t= -2.417,p\<0.0171 , Sex t= 4.135,p\<0.001, Listening in Classs t= 2.062,p\<0.0413 . When one unit of Student Age increases, Grade performance decreases. However when One unit of sex and listening in classes increases, Grade performance also increases. All other variables were not significant.
+
+Visualization:
+
+```{r}
+library(corrplot)
+correlation_matrix <- cor(core.data[c("Student Age","Sex","School Type","Scholarship type","Activity","partner stat","salary","transport type","Accommodation","sibligs count","Parental status","Mother’s occupation","Father’s occupation","Weekly study hours","attending seminars","Attendance to classes","Preparation to midterm exams 1","Preparation to midterm exams 2","Taking notes in classes","Listening in classes","impact of discussion","GRADE")])
+ 
+corrplot(correlation_matrix, method = "color", type = "upper", order = "hclust", 
+         tl.col = "black", tl.srt = 45, tl.cex = 0.6)
+
+```
